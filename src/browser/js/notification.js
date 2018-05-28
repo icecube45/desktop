@@ -17,7 +17,14 @@ const playDing = throttle(() => {
 
 export default class EnhancedNotification extends OriginalNotification {
   constructor(title, options) {
+    var playWin10Ding = false;
     if (process.platform === 'win32') {
+      if(!osVersion.isLowerThanOrEqualWindows8_1()){ //Check if win10 or higher
+        if (!options.silent){ //check if not silent
+          options.silent = true; //silence anyways
+          playWin10Ding = true; //flag to play our sound instead
+        }
+      }
       // Replace with application icon.
       options.icon = appIconURL;
     } else if (process.platform === 'darwin') {
@@ -31,13 +38,14 @@ export default class EnhancedNotification extends OriginalNotification {
       title,
       options,
     });
-
     if (process.platform === 'win32' && osVersion.isLowerThanOrEqualWindows8_1()) {
       if (!options.silent) {
         playDing();
       }
+    } else if (playWin10Ding){ // else we're on Windows 10 and not silent
+          playDing(); //Play our sound
+      }
     }
-  }
 
   set onclick(handler) {
     super.onclick = () => {
